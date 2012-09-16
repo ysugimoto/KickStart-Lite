@@ -23,6 +23,10 @@ Removed Features
 * Select chosen
 * Rich text editor
 
+Added Features
+--------------
+
+* .fixheight CSS helper
 
 
 
