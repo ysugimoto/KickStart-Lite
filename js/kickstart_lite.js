@@ -12,6 +12,7 @@
 */
 
 (function() {
+	var nodes;
 	
 	if ( ! window.KL ) {
 		window.KL = {};
@@ -93,36 +94,46 @@
 	}
 
 	function fadeIn(node, duration) {
-		if ( node.__animate ) {
-			return;
-		}
 		var op = ( "opacity" in node.style ) ? true : false,
 			begin,
 			timer,
+			before = 0,
 			duration = duration || 200;
-
-		if ( op ) {
-			node.style.opacity = 0;
+		
+		if ( node.__animate ) {
+			clearInterval(node.__animate);
+			delete node.__animate;
+			before = node.__state;
+			if ( op ) {
+				node.style.opacity = before;
+			} else {
+				node.style.filter = 'alpha(opacity=' + before*100 + ')';
+			}
 		} else {
-			node.style.filter = 'alpha(opacity=0)';
+			if ( op ) {
+				node.style.opacity = 0;
+			} else {
+				node.style.filter = 'alpha(opacity=0)';
+			}
 		}
 
 		begin = +new Date;
-		node.__animate = true;
-		timer = setInterval(function() {
+		node.__animate = setInterval(function() {
 			var time = +new Date - begin,
 				point;
 
 			if ( time < duration ) {
-				point = 1 * time / duration + 0; // linear easing inline
+				point = (1 - before) * time / duration + before; // linear easing inline
+				node.__state = point;
 				if ( op ) {
 					node.style.opacity = point;
 				} else {
 					node.style.filter = 'alpha(opacity=' + point*100 + ')';
 				}
 			} else {
-				node.__animate = false;
-				clearInterval(timer);
+				clearInterval(node.__animate);
+				delete node.__animate;
+				delete node.__state;
 				if ( op ) {
 					node.style.opacity = 1;
 				} else {
@@ -133,28 +144,37 @@
 	}
 
 	function fadeOut(node, duration) {
-		if ( node.__animate ) {
-			return;
-		}
 		var op = ( "opacity" in node.style ) ? true : false,
 			begin,
 			timer,
+			before = 1,
 			duration = duration || 200;
-
-		if ( op ) {
-			node.style.opacity = 1;
+		
+		if ( node.__animate ) {
+			clearInterval(node.__animate);
+			delete node.__animate;
+			before = node.__state;
+			if ( op ) {
+				node.style.opacity = before;
+			} else {
+				node.style.filter = 'alpha(opacity=' + before*100 + ')';
+			}
 		} else {
-			node.style.filter = 'alpha(opacity=100)';
+			if ( op ) {
+				node.style.opacity = 1;
+			} else {
+				node.style.filter = 'alpha(opacity=100)';
+			}
 		}
 
 		begin = +new Date;
-		node.__animate = true;
-		timer = setInterval(function() {
+		node.__animate = setInterval(function() {
 			var time = +new Date - begin,
 				point;
 
 			if ( time < duration ) {
-				point = -1 * time / duration + 1; // linear easing inline
+				point = (0 - before) * time / duration + before; // linear easing inline
+				node.__state = point;
 				if ( op ) {
 					node.style.opacity = point;
 				} else {
@@ -167,8 +187,10 @@
 					node.style.filter = 'alpha(opacity=0)';
 				}
 				node.style.display = 'none';
-				node.__animate = false;
-				clearInterval(timer);
+				clearInterval(node.__animate);
+				delete node.__animate;
+				delete node.__state;
+				
 			}
 		}, 60 / 1000);
 	}
@@ -184,8 +206,7 @@
 	/*---------------------------------
 		MENU Dropdowns
 	-----------------------------------*/
-	(function() {
-		var nodes = Sizzle('ul.menu');
+	( (nodes = Sizzle('ul.menu')).length > 0 ) &&(function(nodes) {
 		var length = nodes.length;
 		var node;
 		var subNodes;
@@ -252,24 +273,19 @@
 				}
 			}
 		}
-	})();
+	})(nodes);
 	
 	/*---------------------------------
 		HTML5 Placeholder Support
 	-----------------------------------*/
-	(function() {
-		var nodes = Sizzle('input[placeholder], textarea[placeholder]');
-
-		new KL.PlaceHolder(nodes);
-	})();
+	( (nodes = Sizzle('input[placeholder], textarea[placeholder]')).length > 0 ) && new KL.PlaceHolder(nodes);
 	
 	/*---------------------------------
 		MEDIA
 	-----------------------------------*/
 	// video placeholder
-	(function() {
-		var nodes = Sizzle('a.video-placeholder'),
-			length = nodes.length,
+	( (nodes = Sizzle('a.video-placeholder')).length > 0 ) && (function(nodes) {
+		var length = nodes.length,
 			i = 0,
 			tmp;
 
@@ -279,12 +295,11 @@
 			tmp.setAttribute('data-icon', ' ');
 			nodes[i].appendChild(tmp);
 		}
-	})();
+	})(nodes);
 	
 	// calendar
-	(function() {
-		var nodes = Sizzle('.calendar'),
-			length = nodes.length,
+	( (nodes = Sizzle('.calendar')).length > 0 ) && (function(nodes) {
+		var length = nodes.length,
 			i = 0,
 			node;
 
@@ -292,7 +307,7 @@
 			node = nodes[i];
 			KL.Calendar(node, { month: node.getAttribute('data-month'), year: node.getAttribute('data-year')});
 		}
-	})();
+	})(nodes);
 	
 	/*---------------------------------
 		Tabs
@@ -367,9 +382,8 @@
 	/*---------------------------------
 		Image Style Helpers
 	-----------------------------------*/
-	(function() {
-		var nodes = Sizzle('img.style1, img.style2, img.style3'),
-			length = nodes.length,
+	( (nodes = Sizzle('img.style1, img.style2, img.style3')).length > 0 ) && (function(nodes) {
+		var length = nodes.length,
 			i = 0,
 			node,
 			wrap;
@@ -386,11 +400,11 @@
 			node.className = '';
 			node.style.display = 'none';
 		}
-	})();	
+	})(nodes);
 	/*---------------------------------
 		Image Caption
 	-----------------------------------*/
-	(function() {
+	( (nodes = Sizzle('img.caption')).length > 0 ) && (function(nodes) {
 		var nodes = Sizzle('img.caption'),
 			length = nodes.length,
 			node,
@@ -409,7 +423,7 @@
 				wrap.appendChild(tmp);
 			}
 		}
-	})();
+	})(nodes);
 	
 	/*---------------------------------
 		Notice
@@ -430,9 +444,8 @@
 	/*---------------------------------
 		ToolTip - TipTip
 	-----------------------------------*/
-	(function() {
-		var nodes = Sizzle('.tooltip, .tooltip-top, .tooltip-bottom, .tooltip-right, .tooltip-left'),
-			length = nodes.length,
+	( (nodes = Sizzle('.tooltip, .tooltip-top, .tooltip-bottom, .tooltip-right, .tooltip-left')).length > 0 ) && (function(nodes) {
+		var length = nodes.length,
 			i = 0;
 			
 		for ( ; i < length; ++i ) {
@@ -469,14 +482,13 @@
 				});
 			})(nodes[i]);
 		}
-	})();
+	})(nodes);
 
 	/*---------------------------------
 		Icons
 	-----------------------------------*/
-	(function() {
-		var nodes = Sizzle('.icon'),
-			length = nodes.length,
+	( (nodes = Sizzle('.icon')).length > 0 ) && (function(nodes) {
+		var length = nodes.length,
 			i = 0,
 			tmp;
 			
@@ -487,7 +499,7 @@
 			nodes[i].appendChild(tmp);
 			nodes[i].style.display = 'inline-block';
 		}
-	})();
+	})(nodes);
 	
 	/*---------------------------------
 		CSS Helpers
@@ -591,13 +603,43 @@
 		}
 		prettyPrint && prettyPrint();
 	})();
+
+	/*---------------------------------
+		Fix height
+	-----------------------------------*/
+	( (nodes = Sizzle('.fixheight')).length > 0 ) && (function(nodes) {
+		var length = nodes.length,
+			subNode,
+			i = 0,
+			max = 0;
+
+		for ( ; i < length; ++i ) {
+			nodes[i].normalize();
+			max = 0;
+			subNode = nodes[i].firstChild;
+			while ( subNode ) {
+				if ( subNode.nodeType === 1 ) {
+					max = ( subNode.offsetHeight > max )
+					        ? subNode.offsetHeight
+					        : max;
+				}
+				subNode = subNode.nextSibling;
+			}
+			subNode = nodes[i].firstChild;
+			while ( subNode ) {
+				if ( subNode.nodeType === 1 ) {
+					subNode.style.height = max + 'px';
+				}
+				subNode = subNode.nextSibling;
+			}
+		}
+	})(nodes);
 	
 	} // init
 	
 	
 // DOMRady
 (function(){var a=document;KL.domReady=function(b){if(a.body)b();else if(a.addEventListener)a.addEventListener("DOMContentLoaded",b,!1);else if(a.attachEvent){var c=function(){"complete"===a.readyState&&(b(),a.detachEvent("onreadystatechange",c))};a.attachEvent("onreadystatechange",c)}else if(a.readyState){var d=function(){"loaded"==a.readyState||"complete"==a.readyState?b():setTimeout(d,0)};d()}}})();
-
 
 /*
  * TipTip
